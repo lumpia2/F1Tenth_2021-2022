@@ -35,3 +35,14 @@ Online tutortials can be found [here.](http://wiki.ros.org/ROS/Tutorials)
 The weekly challenge is similar to last week's - commit & push an image of your modified publisher (talker.py) message to the F1Tenth GitHub, as well as your subscriber (listener.py) outputting the same message.
 
 Post the image to the appropriate folder path i.e. **F1Tenth_2021-2022/media/images/publisher-subscriber-message/**. Make sure to pull the images others have posted before you push yours. 
+
+
+## 10/24 - 10/30: RGBD Camera 
+
+We finally have our hands on some hardware - the [Intel Realsense d435](https://www.intelrealsense.com/depth-camera-d435/). We split up into 3 groups which will independently attempt to interface the camera with ROS. Ideally, we will be able to use this interface later to do some advanced image processing on the hardware of the car. 
+
+The three groups are shown by members on each card located in the [Trello.](https://trello.com/b/ofsd7s9F/weekly-sprint) If you missed the meeting or don't have a group, feel free to hop on whichever team you'd like.
+
+If you develop code that you think might be useful in the fututre, either to use or to reference, upload it to the appropriate **RGBD-Camera** directory on the GitHub. 
+
+
