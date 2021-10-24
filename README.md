@@ -41,7 +41,7 @@ Post the image to the appropriate folder path i.e. **F1Tenth_2021-2022/media/ima
 
 We finally have our hands on some hardware - the [Intel Realsense d435](https://www.intelrealsense.com/depth-camera-d435/). We split up into 3 groups which will independently attempt to interface the camera with ROS. Ideally, we will be able to use this interface later to do some advanced image processing on the hardware of the car. 
 
-The three groups are shown by members on each card located in the [Trello.](https://trello.com/b/ofsd7s9F/weekly-sprint) If you missed the meeting or don't have a group, feel free to hop on whichever team you'd like.
+The three groups are shown by members on each card located in the [Trello.](https://trello.com/b/ofsd7s9F/weekly-sprint) If you missed the meeting or don't have a group, feel free to hop on whichever team you'd like. The camera will be located in the RAS room, just down the hall from 1211 BNDM, our usual meeting place. The room is normally locked, but someone should be in there for most of the day. 
 
 If you develop code that you think might be useful in the fututre, either to use or to reference, upload it to the appropriate **RGBD-Camera** directory on the GitHub. 
 
