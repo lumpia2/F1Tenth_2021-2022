@@ -1,6 +1,10 @@
 # F1Tenth_2021-2022
 Official Repository for Pitt RAS F1Tenth 2021-2022 Team 
 
+To get "up to speed", take a look at our [Getting Started](https://docs.google.com/document/d/1MPcZuDyK1n8SSpPkCYEtRkjRHpZaNV0-Qj5Cd3Ra4kE/edit?usp=sharing) Guide
+
+Once you've done that, make sure that you understand the topics covered each week so you can hop on a current project.
+
 ## 10/3 - 10/9: Introduction to ROS - Part 1
 
 We learned the basic concepts of ROS: what it is, how it works, and how we build robots. We covered Nodes, messages, topics, and how they work into the overarching graph of a robotic system.
