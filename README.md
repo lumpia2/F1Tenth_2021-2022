@@ -49,7 +49,7 @@ The three groups are shown by members on each card located in the [Trello.](http
 
 If you develop code that you think might be useful in the fututre, either to use or to reference, upload it to the appropriate **RGBD-Camera** directory on the GitHub. 
 
-## 10/31 - 11/6
+## 10/31 - 11/6: Intro to SLAM
 
 We introduced SLAM - simultaneous localization and mapping. We can utilize an Extended Kalman Filter (EKF) to both localize (estimate our position) and create a map of our environment. 
 
