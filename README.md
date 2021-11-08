@@ -57,6 +57,11 @@ Like last week, we broke into three groups located in the [SLAM Teams Trello Car
 
 Anything that might be helpful to others should be shared via GitHub or other medium. As always, have fun with it!
 
+## 11/7 - 11/13: Perception Presentation 
+
+We had an excellent presentation from Adam Johnson, a senior CoE student who led the LiDAR development on the Indy Autonomous Challenge car. Slides can be accessed [here.](https://docs.google.com/presentation/d/1OpZpCFbR4MlRBM9_tBVKmbXkI15ABNUqcTTLkb2kKVQ/edit?usp=sharing)
+
+Continue on with developing ROS connections between the camera and RTAB-Map. We've had some great success so far with getting it set up on the RAS computer in the workshop.
 
 
 
