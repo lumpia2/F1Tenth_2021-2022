@@ -63,5 +63,13 @@ We had an excellent presentation from Adam Johnson, a senior CoE student who led
 
 Continue on with developing ROS connections between the camera and RTAB-Map. We've had some great success so far with getting it set up on the RAS computer in the workshop.
 
+## 11/14-11/28
 
+We've gotten some hardware in, and can finally begin to connect some concepts. To-do for this week
+- Design & 3D-print a mechanical enclosure to hold an Intel Realsense d435 and Intel T265 parallel, co-planar, and pecisely distanced from each other at all times. This will allow us to fulfill the depth & odometry requirements of RTAB-Map.
+- Create ROS code to store camera data in a ROS .bag file. This will be necessary to store data in a mobile source before creating a map from it on a desktop.
+- Create ROS code to retrive camera data from a ROS.bag file and use it in RTAB map. 
+- Begin building the physical car - we now have a chassis. Check out this [F1tenth build link](https://f1tenth.org/build.html) to get started. 
+
+Push any relevant info to the GitHub. We'll ideally have a map of the 11th floor by 12/5/2021. 
 
