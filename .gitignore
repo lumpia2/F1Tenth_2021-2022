@@ -1,3 +1,6 @@
 c+p.cmd
 
-./.DS_Store 
+./.DS_Store
+*build
+*devel
+*logs
