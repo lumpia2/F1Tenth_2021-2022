@@ -18,7 +18,7 @@ public:
     {   
         
         scan = nh.subscribe("/scan", 1, &PointDist::scan_cb, this); 
-        max_pub = nh.advertise<point_dist::PointDist>("/farther_point", 1); 
+        max_pub = nh.advertise<point_dist::PointDist>("/farthest_point", 1); 
         min_pub = nh.advertise<point_dist::PointDist>("/closest_point", 1); 
     }
 
