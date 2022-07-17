@@ -16,7 +16,7 @@ public:
     PointDist()
         : nh(ros::NodeHandle("~"))
     {   
-        
+        ROS_INFO("Setting up point distance node."); 
         scan = nh.subscribe("/scan", 1, &PointDist::scan_cb, this); 
         max_pub = nh.advertise<point_dist::PointDist>("/farthest_point", 1); 
         min_pub = nh.advertise<point_dist::PointDist>("/closest_point", 1); 
@@ -26,10 +26,11 @@ public:
     {
         point_dist::PointDist max, min; 
         
+        // Initiate inital mins and max
         max.distance = msg.ranges[0];  
         min.distance = msg.ranges[0]; 
-        max.angle = msg.angle_min;  //* (180.0/M_PI); 
-        min.angle = msg.angle_min; //* (180.0/M_PI); 
+        max.angle = msg.angle_min; 
+        min.angle = msg.angle_min; 
 
         for( size_t i = 1; i < msg.ranges.size(); i ++ )
         {
@@ -45,6 +46,9 @@ public:
                 min.angle = (msg.angle_min + (i*msg.angle_increment));
             } 
         }
+        
+        // min.angle = min.angle*(180.0/M_PI); 
+        // max.angle = max.angle*(180.0/M_PI);
 
         max_pub.publish(max);
         min_pub.publish(min); 

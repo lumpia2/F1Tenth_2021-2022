@@ -8,18 +8,20 @@
 
 #define PI M_PI
 
+//
 // (TODO) [nmm] Add a library that has predifined macros and structs
+//
 struct car_intrinsics
 { 
-        float width, wheelbase, base_link;  
+        double width, wheelbase, base_link;  
 };
 
 struct lidar_intrinsics 
 { 
-    double num_scans,
-           scan_inc,
+    double scan_inc,
            min_angle,
-           max_angle; 
+           max_angle;
+    int num_scans; 
 }; 
 
 std::vector<double> compute_car_perim(
@@ -28,35 +30,36 @@ std::vector<double> compute_car_perim(
     std::vector<double> car_perim; 
     car_perim.reserve(lidar_data.num_scans); 
     auto angle = lidar_data.min_angle; 
-
-    for( size_t i = lidar_data.min_angle; i < lidar_data.num_scans; i++ ) 
+    
+    for( size_t i = 0; i < lidar_data.num_scans; i++ ) 
     { 
         if(angle > 0.0) // top half
             if(angle < PI/2) // First Quadrant 
             {
                 auto right_side = (car_data.width/2)/std::cos(angle);
                 auto top_right = (car_data.wheelbase - car_data.base_link)/std::cos((PI/2)-angle); 
-                car_perim[i] = std::min(right_side, top_right);  
+                car_perim.push_back(std::min(right_side, top_right));  
             }
             else // Second Quadrant
             {
                 auto top_left = (car_data.wheelbase - car_data.base_link)/std::cos(angle - (PI/2));
                 auto left_side = (car_data.width/2)/std::cos(PI - angle);  
-                car_perim[i] = std::min(left_side, top_left); 
+                car_perim.push_back(std::min(left_side, top_left)); 
             }
         else // bottom half
             if(angle < -PI/2) // Third Quadrant
             {
                 auto left_side = (car_data.width/2)/std::cos(PI + angle);
                 auto bottom_left = (car_data.base_link)/std::cos(-angle - (PI/2)); 
-                car_perim[i] = std::min(left_side, bottom_left); 
+                car_perim.push_back(std::min(left_side, bottom_left)); 
             }
             else // Fourth Quadrant
             {
                 auto bottom_right = (car_data.base_link)/std::cos((PI/2)-angle); 
                 auto right_side = (car_data.width/2)/std::cos(-angle);
-                car_perim[i] = std::min(bottom_right, right_side); 
+                car_perim.push_back(std::min(bottom_right, right_side)); 
             }
+        angle += lidar_data.scan_inc; 
     }
     return car_perim; 
 } 
@@ -85,6 +88,7 @@ private:
 public:
     Safety() 
     {
+        ROS_INFO("Initializing emergency brake configs."); 
         n = ros::NodeHandle("~");
         speed = 0.0; 
 
@@ -92,16 +96,30 @@ public:
         brake_msg.brake.data = true; 
         brake_msg.speed.drive.speed = 0.0; 
         
+        // n.getParam("scan_beams", lidar.num_scans); 
+        
         // Listening to one scan message to grab LIDAR instrinsics 
         boost::shared_ptr<const sensor_msgs::LaserScan> 
-            shared = ros::topic::waitForMessage<sensor_msgs::LaserScan>("/scan", n);
+            shared = ros::topic::waitForMessage<sensor_msgs::LaserScan>("/scan", n, ros::Duration(10));
         
         if( shared != NULL )
         {
+            ROS_INFO("Scan frame id: %f", shared->header.frame_id); 
             lidar.scan_inc = shared->angle_increment;
             lidar.max_angle = shared->angle_max; 
             lidar.min_angle = shared->angle_max; 
-            lidar.num_scans = (lidar.max_angle - lidar.min_angle)/lidar.scan_inc; 
+            
+            //
+            // TODO(nmm) make these extrinsics automated and organize
+            //
+            n.getParam("scan_beams", lidar.num_scans); 
+            
+            ROS_INFO(""); 
+            ROS_INFO("Min Angle:\t%f", lidar.min_angle);
+            ROS_INFO("Max Andgle:\t%f", lidar.max_angle); 
+            ROS_INFO("Scan Incr:\t%f", lidar.scan_inc);  
+            ROS_INFO("Num scans:\t%f", lidar.num_scans); 
+            ROS_INFO(""); 
         } 
 
         /*
@@ -131,7 +149,7 @@ public:
             /* Scan Subscriber*/
         scan_sub = n.subscribe("/scan", 1, &Safety::scan_callback, this);
             /* Odom Subscriber */ 
-        odom_sub = n.subscribe("/scan", 1, &Safety::odom_callback, this); 
+        odom_sub = n.subscribe("/odom", 1, &Safety::odom_callback, this); 
 
         n.getParam("width", car.width); 
         n.getParam("scan_distance_to_base_link", car.base_link); 
@@ -139,7 +157,7 @@ public:
         n.getParam("scan_beams", lidar.num_scans);
 
         // Compute the perimeter of the car
-        compute_car_perim(car, lidar); 
+        car_perimeter = compute_car_perim(car, lidar); 
     }   
 
     void odom_callback(const nav_msgs::Odometry::ConstPtr &odom_msg) 
@@ -148,15 +166,16 @@ public:
     }
 
     void scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg) 
-    {
-        // TODO: calculate TTC
+    {   
+        // If the array sizes don't match then we won't continue with the scan
         if(scan_msg->ranges.size() != car_perimeter.size()) 
         {
-            ROS_INFO("Scan size does match precomputed size."); 
+            ROS_INFO_ONCE("Scan size does match precomputed size(%d != %d)",
+                scan_msg->ranges.size(), car_perimeter.size()); 
             return; 
         }
         
-        // TODO: publish drive/brake message
+        // Calculating TTC for each scan increment.
         for( size_t i = 0 ; i < scan_msg->ranges.size(); i++ ) 
         {
             auto r_hat = speed*std::cos(i*scan_msg->angle_increment + scan_msg->angle_min); 
@@ -167,6 +186,7 @@ public:
             { 
                 brake_pub.publish(brake_msg.brake); 
                 speed_pub.publish(brake_msg.speed); 
+                ROS_INFO("E-BRAKE: \n\t(angle):%f", i*scan_msg->angle_increment); 
             }
         }
     }
