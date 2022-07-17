@@ -190,14 +190,11 @@ public:
                 auto ttc = (scan_msg->ranges[i] - car_perimeter[i])/r_hat; 
 
                 if( ttc < ttc_threshold  && (ttc>=0.0)) 
-                { 
-                    // if(!brake_msg.brake.data)
-                    // {
+                {
                     brake_msg.brake.data = true; 
                     speed_pub.publish(brake_msg.speed); 
                     brake_pub.publish(brake_msg.brake); 
                     ROS_INFO("E-BRAKE:\t(angle)%f", scan_msg->angle_min +i*scan_msg->angle_increment); 
-                    // }
                 }
             }
         }
