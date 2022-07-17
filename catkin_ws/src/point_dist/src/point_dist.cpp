@@ -50,6 +50,9 @@ public:
         // min.angle = min.angle*(180.0/M_PI); 
         // max.angle = max.angle*(180.0/M_PI);
 
+        min.angle = min.angle; 
+        max.angle = max.angle; 
+
         max_pub.publish(max);
         min_pub.publish(min); 
     }
