@@ -1,3 +1,7 @@
+#################################
+### TODO(nmm) groom this file ###
+#################################
+
 # The distance between the front and
 # rear axle of the racecar
 wheelbase: 0.3302 # meters
