@@ -1,7 +1,8 @@
 c+p.cmd
 
 ./.DS_Store
-*build
-*devel
-*logs
+*build/
+*devel/
+*logs/
+.vscode
 .catkin_tools
