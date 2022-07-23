@@ -20,7 +20,6 @@
 #include <std_msgs/Int32MultiArray.h>
 #include <nav_msgs/Odometry.h>
 
-
 #include <cmath>
 #define pi M_PI // lazily avoiding uppercase variables for science 
 
@@ -31,6 +30,7 @@ class WallFollow
         ros::NodeHandle n; 
         ros::Publisher drive_pub; 
         ros::Subscriber scan_sub, mux_sub; 
+
         ros::Time curr_time; 
 
         std::string drive_topic; 
@@ -155,4 +155,3 @@ int main(int argc, char **argv)
     ros::spin(); 
     return 0; 
 }
-

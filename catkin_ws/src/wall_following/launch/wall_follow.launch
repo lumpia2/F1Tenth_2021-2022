@@ -35,7 +35,6 @@
         <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
     </node>
 
-
     <node pkg="wall_follow" name="wall_follow" type="wall_follow" output="screen">
         <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
     </node>
