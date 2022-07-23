@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>wall_following</name>
+  <name>wall_follow</name>
+
   <version>0.0.0</version>
   <description>The wall_following package</description>
 

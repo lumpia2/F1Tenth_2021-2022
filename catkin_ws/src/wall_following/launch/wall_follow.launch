@@ -35,8 +35,9 @@
         <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
     </node>
 
-    <node pkg="safety_node" name="safety_node" type="safety_node" output="screen">
-        <rosparam command="load" file="$(find safety_node)/params.yaml"/>
+
+    <node pkg="wall_follow" name="wall_follow" type="wall_follow" output="screen">
+        <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
     </node>
     
     <!-- Launch RVIZ -->
