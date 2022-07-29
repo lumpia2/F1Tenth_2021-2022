@@ -29,9 +29,8 @@
 
 /**
  * (todo)
+ * - log P controller values
  * - need to test and tune PID controller
- * - Take all structs and put them in a header file for cleanliness
- * - In the lidar callback and pid function, instantiated all of those variables elsewhere
  */
 
 class WallFollow
@@ -59,7 +58,9 @@ class WallFollow
         bool enabled, done;
 
     public:
-        WallFollow():
+        WallFollow() = delete;
+        WallFollow(double rate):
+            dt(1/rate),
             enabled(false), done(false),
             prevErr(0.0),
             p(0.0), i(0.0), d(0.0),
@@ -122,10 +123,6 @@ class WallFollow
             drive.drive.speed=0.0;
         }
 
-        void spin()
-        {
-            ros::spinOnce();
-        }
 
         void mux_cb(const std_msgs::Int32MultiArray &msg)
         {
@@ -151,9 +148,7 @@ class WallFollow
             auto b = msg.ranges[bIdx];
 
             auto alpha = std::atan((a*std::cos(theta)-b)/(a*std::sin(theta)));
-            auto dist = b*std::cos(alpha);
-            auto L = drive.drive.speed*dt;
-            auto dist_1 = dist + L*std::sin(alpha);
+            auto dist_1 = (b*std::cos(alpha)) + (drive.drive.speed*dt)*std::sin(alpha);
 
             err = sp - dist_1;
 
@@ -161,12 +156,10 @@ class WallFollow
                 pid_control(err);
 
             prevErr = err;
-            // dt = ros::Time::now() - pidStartTime;
         }
 
         void pid_control(const double &err)
         {
-            // ROS_INFO("Error: %f", err);
             p = err;
             i += err; // may need to be clamped
             d = (err-prevErr)/dt;
@@ -175,6 +168,9 @@ class WallFollow
             const auto steer_ang_deg = steer_angle*(180.0/pi);
             const auto abs_steer_ang_deg = std::abs(steer_ang_deg);
 
+            //
+            // TODO: Change these limits to compare against radians to minimize conversions
+            //
             if(abs_steer_ang_deg >= 0.0 && abs_steer_ang_deg<10.0)
                 drive.drive.speed = 1.5;
             else if(abs_steer_ang_deg>=10.0 && abs_steer_ang_deg<=20.0)
@@ -190,17 +186,28 @@ class WallFollow
             drivePub.publish(drive);
         }
 
+        ros::Rate getRate() const
+        {
+            return 1/dt;
+        }
+
         bool isDone() const
         {
             return done;
+        }
+
+        void spin()
+        {
+            ros::spinOnce();
         }
 };
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "wall_follow");
-    WallFollow w;
-    ros::Rate rate(60.0);
+    WallFollow w(60.0);
+    ros::Rate rate(w.getRate());
+
     while(!w.isDone())
     {
         w.spin();
