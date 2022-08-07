@@ -13,7 +13,13 @@ scan_beams: 1080
 wall_follow_topic: "/wall_follow"
 wall_follow_idx: 5
 
-kp: 0.9
-ki: 0.001
-kd: 0.1
+gap_follow_topic: "/gap_following"
+gap_follow_idx: 6
+
+rb: 0.5
+
+kp: 0.5
+ki: 0.0
+kd: 0.0
+
 sp: 0.7
