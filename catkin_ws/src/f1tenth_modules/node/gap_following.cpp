@@ -15,7 +15,7 @@
 #include <ackermann_msgs/AckermannDrive.h>
 #include <std_msgs/Int32MultiArray.h>
 
-#include <f1tenth_modules/f1tenthUtils.hpp>
+#include <f1tenth_modules/f1tenthUtils.hh>
 
 class GapFollowing
 {
@@ -56,8 +56,8 @@ class GapFollowing
         scanSub = n.subscribe("/scan", 1, &GapFollowing::scan_cb, this);
         muxSub = n.subscribe("mux", 1, &GapFollowing::mux_cb, this);
 
-        scanStartIdx = getScanIdx((-pi/2.0), lidarData);
-        scanEndIdx = getScanIdx((pi/2.0), lidarData);
+        scanStartIdx = getScanIdx((-M_PI/2.0), lidarData);
+        scanEndIdx = getScanIdx((M_PI/2.0), lidarData);
     }
 
     void mux_cb(const std_msgs::Int32MultiArray &msg)
