@@ -15,6 +15,7 @@
 #include <ackermann_msgs/AckermannDrive.h>
 #include <std_msgs/Int32MultiArray.h>
 
+#include <f1tenth_modules/RvizWrapper.hh>
 #include <f1tenth_modules/f1tenthUtils.hh>
 
 class GapFollowing
@@ -34,6 +35,9 @@ class GapFollowing
         int scanStartIdx, scanEndIdx;
         double rb;
         bool enabled;
+
+        std::unique_ptr<RvizPoint> bubblePoints;
+        std::unique_ptr<RvizPoint> maxSequencePoints;
 
     public:
 
@@ -58,6 +62,26 @@ class GapFollowing
 
         scanStartIdx = getScanIdx((-M_PI/2.0), lidarData);
         scanEndIdx = getScanIdx((M_PI/2.0), lidarData);
+
+        // Rviz configuration
+        geometry_msgs::Pose pose;
+        geometry_msgs::Vector3 scale;
+
+        pose.orientation.w = 1.0;
+        scale.x = scale.y = 0.1;
+
+        rvizOpts opts =
+            {.color=0xff0000, .frame_id="laser_model", .ns="point",
+             .pose=pose, .scale=scale, .topic="/dynamic_viz"};
+
+        // These points will be red.
+        bubblePoints = std::make_unique<RvizPoint>(n, opts);
+        opts.color=0x00ff00;
+        //These points will be green.
+        maxSequencePoints = std::make_unique<RvizPoint>(n, opts);
+
+        bubblePoints->addTransformPair("base_link", "laser_model");
+        maxSequencePoints->addTransformPair("base_link", "laser_model");
     }
 
     void mux_cb(const std_msgs::Int32MultiArray &msg)
@@ -94,28 +118,47 @@ class GapFollowing
         auto bubble_end_idx = getScanIdx(closestPoint.angle - theta, lidarData);
 
         std::vector<size_t> zeros_indices{0};
+        // Holds the start and the end of a sequence of numbers
         std::pair<size_t, size_t> max_sequence_indices;
-        pointScan point;
+        geometry_msgs::Point point;
+        pointScan point_scan;
         double r = rb;
         double max_sequence{0.0};
+
+        std::vector<geometry_msgs::Point> bubble_point_vector;
 
         // Check all points in the scan range of the bubble
         for(size_t i = bubble_start_idx; i <= bubble_end_idx; i++)
         {
-            point.angle = i*msg.angle_increment + msg.angle_min;
-            point.dist = msg.ranges[i];
-            point.idx = i; //may be unecessary
+            point_scan.angle = i*msg.angle_increment + msg.angle_min;
+            point_scan.dist = msg.ranges[i];
+            point_scan.idx = i; //may be unecessary
 
             r = std::sqrt(
-                std::pow(point.dist,2)
+                std::pow(point_scan.dist,2)
                 + std::pow(closestPoint.dist,2)
-                - 2*point.dist*closestPoint.dist*std::cos(point.angle - closestPoint.angle)
+                - 2*point_scan.dist*closestPoint.dist*std::cos(point_scan.angle - closestPoint.angle)
                 );
 
-            // Store the index of the 'zero'
+            //
+            // TODO(nmm): Add some sort of configuration to turn
+            //  the rviz functionality on and off
+            //
+
+            // Store the index of the 'zero' and add the points
+            // rectangular coordinates
             if( r < rb )
+            {
+                point.x = msg.ranges[i]*std::cos(msg.range_min + i*msg.angle_increment);
+                point.y = msg.ranges[i]*std::sin(msg.range_min + i*msg.angle_increment);
+                point.z = 0;
+
                 zeros_indices.push_back(i);
+                bubble_point_vector.push_back(point);
+            }
         }
+
+        bubblePoints->addTranslation(bubble_point_vector);
 
         //
         // Checking for the largest non-zero sequence
@@ -172,13 +215,18 @@ class GapFollowing
         drive.drive.steering_angle_velocity = 0.0;
         drive.drive.speed = 1.0;
 
-        drivePub.publish(drive);
+        if (enabled)
+            drivePub.publish(drive);
     }
 };
 
 
 int main(int argc, char **argv)
 {
+    ros::init(argc, argv, "gap_follow");
+    GapFollowing g;
 
+    ros::spin();
+    return 0;
 }
 
