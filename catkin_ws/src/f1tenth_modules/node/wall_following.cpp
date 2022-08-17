@@ -1,8 +1,7 @@
 /**
  * @file wall_follow.cpp
  * @author Nathaniel Mallick (nmm109@pitt.edu)
- * @brief This file follows lab 3 of the F1Tenth lab modules
- *          (https://f1tenth-coursekit.readthedocs.io/en/stable/assignments/labs/lab3.html)
+ * @brief This file follows lab 3 of the F1Tenth lab modules (https://f1tenth.org/learn.html)
  * @version 0.1
  * @date 2022-07-18
  *
@@ -15,17 +14,12 @@
 #include <sensor_msgs/LaserScan.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
-
 #include <std_msgs/Int32MultiArray.h>
-#include <nav_msgs/Odometry.h>
+#include <tf2_ros/transform_listener.h>
+#include <visualization_msgs/Marker.h>
 
-#include <std_msgs/Int32MultiArray.h>
-#include <nav_msgs/Odometry.h>
-
-#include <cmath>
-#include <f1tenth_modules/f1tenthUtils.hpp>
-
-#define pi M_PI // lazily avoiding uppercase variables for science
+#include <f1tenth_modules/f1tenthUtils.hh>
+#include <f1tenth_modules/RvizWrapper.hh>
 
 /**
  * (todo)
@@ -33,19 +27,23 @@
  * - need to test and tune PID controller
  */
 
-class WallFollow
+class WallFollowing
 {
     private:
         ros::NodeHandle n;
-        ros::Publisher drivePub;
+        ros::Publisher drivePub, markerPub;
         ros::Subscriber scanSub, muxSub;
 
-        double dt = 1/60.0;
+        tf2_ros::Buffer tBuffer;
+        tf2_ros::TransformListener tfListener;
+        visualization_msgs::Marker point;
         ackermann_msgs::AckermannDriveStamped drive;
-        std::string driveTopic;
+        geometry_msgs::TransformStamped baseLinkTf;
 
+        std::string driveTopic;
         pidGains gains;
         lidarIntrinsics lidarData;
+        std::unique_ptr<RvizPoint> rvizPoint;
 
         int muxIdx;
         int aIdx, bIdx;
@@ -53,42 +51,25 @@ class WallFollow
         double sp, prevErr, err;
         double p,i,d;
         double L;
-        double theta = 70.0*pi/180.0; // [theta = 20 deg] (0 < theta < 70deg)
+        double dt = 1/60.0;
+        double theta = 70.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
 
         bool enabled, done;
 
     public:
-        WallFollow() = delete;
-        WallFollow(double rate):
+        WallFollowing() = delete;
+        WallFollowing(double rate):
             dt(1/rate),
             enabled(false), done(false),
             prevErr(0.0),
             p(0.0), i(0.0), d(0.0),
+            tfListener(tBuffer),
             n(ros::NodeHandle("~"))
         {
             // Extract  lidar info from one message
-            boost::shared_ptr<const sensor_msgs::LaserScan>
-                tmpScan = ros::topic::waitForMessage<sensor_msgs::LaserScan>("/scan", n, ros::Duration(10.0));
-
-            if(tmpScan != NULL)
-            {
-                lidarData.scan_inc = tmpScan->angle_increment;
-                lidarData.min_angle = tmpScan->angle_min;
-                lidarData.max_angle = tmpScan->angle_max;
-                lidarData.num_scans =
-                    (int)ceil((lidarData.max_angle - lidarData.min_angle)/lidarData.scan_inc);
-
-                ROS_INFO("");
-                ROS_INFO("Min Angle:\t%f", lidarData.min_angle);
-                ROS_INFO("Max Andgle:\t%f", lidarData.max_angle);
-                ROS_INFO("Scan Incr:\t%f", lidarData.scan_inc);
-                ROS_INFO("Num scans:\t%d", lidarData.num_scans);
-                ROS_INFO("");
-            } else
-            {
-                ROS_INFO_ONCE("Couldn't extract lidar instrinsics... \nEXITING");
+            lidarData = getLidarInfoFromTopic(n, "/scan");
+            if (!lidarData.valid)
                 exit(-1);
-            }
 
             n.getParam("wall_follow_idx", muxIdx);
             n.getParam("wall_follow_topic", driveTopic);
@@ -103,24 +84,35 @@ class WallFollow
 
             // pubs
             drivePub = n.advertise<ackermann_msgs::AckermannDriveStamped>(driveTopic, 1);
+            markerPub = n.advertise<visualization_msgs::Marker>("/dynamic_viz", 10);
 
             // subs
-            scanSub = n.subscribe("/scan", 1, &WallFollow::lidar_cb, this);
-            muxSub = n.subscribe("/mux", 1, &WallFollow::mux_cb, this);
+            scanSub = n.subscribe("/scan", 1, &WallFollowing::lidar_cb, this);
+            muxSub = n.subscribe("/mux", 1, &WallFollowing::mux_cb, this);
 
             // We want this index the angle thats orthogonally
             // to the left of the front of the car _|
-            bIdx = (int)round((pi/2.0-lidarData.min_angle)/lidarData.scan_inc);
-            aIdx = (int)round((((pi/2.0)-theta)-lidarData.min_angle)/lidarData.scan_inc);
+            bIdx = getScanIdx(M_PI/2.0, lidarData);
+            aIdx = getScanIdx((M_PI/2.0)-theta, lidarData);
             ROS_INFO("Scanning data at angles %f - %f",
                 lidarData.min_angle + (lidarData.scan_inc*aIdx),
                 lidarData.min_angle + (lidarData.scan_inc*bIdx));
 
             // Update theta to be MORE accurate due to rounding errors in finding our idx
             theta = lidarData.scan_inc*(bIdx - aIdx);
-            ROS_INFO("Theta: %f", theta);
-
             drive.drive.speed=0.0;
+
+            geometry_msgs::Pose pose;
+            geometry_msgs::Vector3 scale;
+
+            pose.orientation.w = 1.0;
+            scale.x = scale.y = 0.2;
+
+            rvizOpts opts =
+                {.color=0x00ff00, .frame_id="laser_model", .ns="point",
+                 .pose=pose, .scale=scale, .topic="/dynamic_viz"};
+            rvizPoint = std::make_unique<RvizPoint>(n, opts);
+            rvizPoint->addTransformPair("base_link", "laser_model");
         }
 
 
@@ -141,11 +133,25 @@ class WallFollow
 
         void lidar_cb(const sensor_msgs::LaserScan &msg)
         {
-            // auto pidStartTime = ros::Time::now();
-
             /////!!!!! NEED TO FILTER FOR BAD DISTANCES (inf &&&& <0)
             auto a = msg.ranges[aIdx];
             auto b = msg.ranges[bIdx];
+
+            geometry_msgs::Point point_a, point_b;
+
+            auto a_angle = aIdx*msg.angle_increment + msg.angle_min;
+            auto b_angle = bIdx*msg.angle_increment + msg.angle_min;
+
+            point_a.x = msg.ranges[aIdx]*std::cos(a_angle);
+            point_a.y = msg.ranges[aIdx]*std::sin(a_angle);
+
+            point_b.x = msg.ranges[bIdx]*std::cos(b_angle);
+            point_b.y = msg.ranges[bIdx]*std::sin(b_angle);
+
+            point_a.z = point_b.z = 0.0;
+            std::vector<geometry_msgs::Point> points = {point_a, point_b};
+
+            rvizPoint->addTranslation(points);
 
             auto alpha = std::atan((a*std::cos(theta)-b)/(a*std::sin(theta)));
             auto dist_1 = (b*std::cos(alpha)) + (drive.drive.speed*dt)*std::sin(alpha);
@@ -165,7 +171,7 @@ class WallFollow
             d = (err-prevErr)/dt;
 
             const auto steer_angle = -(gains.kp*p + gains.ki*i + gains.kd*d);
-            const auto steer_ang_deg = steer_angle*(180.0/pi);
+            const auto steer_ang_deg = steer_angle*(180.0/M_PI);
             const auto abs_steer_ang_deg = std::abs(steer_ang_deg);
 
             //
@@ -205,7 +211,7 @@ class WallFollow
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "wall_follow");
-    WallFollow w(60.0);
+    WallFollowing w(60.0);
     ros::Rate rate(w.getRate());
 
     while(!w.isDone())

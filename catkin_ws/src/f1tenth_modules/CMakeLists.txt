@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   roslaunch
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
 )
 roslaunch_add_file_check(launch)
 ## System dependencies are found with CMake's conventions
@@ -131,18 +134,25 @@ include_directories(
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-set( src_nodes 
+
+set( sources
+  src/RvizWrapper.cc
+  src/f1tenthUtils.cc
+)
+
+set( src_nodes
   node/point_dist.cpp
   node/safety_node.cpp
-  node/wall_follow.cpp
+  node/wall_following.cpp
+  node/gap_following.cpp
 )
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 foreach( src_file ${src_nodes} )
-  # string(REGEX REPLACE "\\.[^.]*$" "" BASENAME ${src_file})
   get_filename_component(src_name ${src_file} NAME_WE)
-  add_executable(${src_name} ${src_file})
+  add_executable(${src_name} ${src_file} ${sources})
   target_link_libraries(${src_name} ${catkin_LIBRARIES})
 endforeach()
 
