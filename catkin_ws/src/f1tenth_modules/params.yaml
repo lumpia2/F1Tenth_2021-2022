@@ -16,7 +16,7 @@ wall_follow_idx: 5
 gap_follow_topic: "/nav"
 gap_follow_idx: 6
 
-rb: 0.5
+rb: 0.2
 
 kp: 0.5
 ki: 0.0

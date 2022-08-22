@@ -92,7 +92,6 @@ void RvizWrapper::addTranslation(const std::vector<geometry_msgs::Point> &v)
     {
         geometry_msgs::Point point;
         auto tf = tfBuffer->lookupTransform(transformPair.first, transformPair.second, ros::Time(0));
-
         marker.points.clear();
 
         for(const auto &el : v)

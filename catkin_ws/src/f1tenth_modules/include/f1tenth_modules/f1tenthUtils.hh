@@ -39,7 +39,7 @@ struct pointScan
 {
     double dist;
     double angle; //radians
-    size_t idx;
+    geometry_msgs::Point p;
 };
 
 struct rvizOpts
