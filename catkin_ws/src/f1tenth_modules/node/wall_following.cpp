@@ -52,7 +52,7 @@ class WallFollowing
         double p,i,d;
         double L;
         double dt = 1/60.0;
-        double theta = 70.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
+        double theta = 20.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
 
         bool enabled, done;
 
@@ -166,8 +166,9 @@ class WallFollowing
 
         void pid_control(const double &err)
         {
+            ROS_INFO("Error: %f", err);
             p = err;
-            i += err; // may need to be clamped
+            i += err*dt; // may need to be clamped
             d = (err-prevErr)/dt;
 
             const auto steer_angle = -(gains.kp*p + gains.ki*i + gains.kd*d);
