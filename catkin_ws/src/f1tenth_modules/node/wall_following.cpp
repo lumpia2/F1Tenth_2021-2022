@@ -54,9 +54,6 @@ class WallFollowing
         double dt;
         double theta = 40.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
 
-        carIntrinsics car_intrinsics;
-        double lidarToMid;
-
         bool enabled, done;
 
     public:
@@ -80,13 +77,6 @@ class WallFollowing
             n.getParam("ki", gains.ki);
             n.getParam("kd", gains.kd);
             n.getParam("sp", sp);
-
-            // Car dimensions
-            n.getParam("wheelbase", car_intrinsics.wheelbase);
-            n.getParam("scan_distance_to_base_link", car_intrinsics.base_link);
-            n.getParam("width", car_intrinsics.width);
-
-            lidarToMid = car_intrinsics.base_link - (car_intrinsics.wheelbase/2.0);
 
             ROS_INFO("");
             ROS_INFO("\tkp: %f\tki: %f\tkd: %f", gains.kp, gains.ki, gains.kd);
@@ -152,10 +142,10 @@ class WallFollowing
             auto a_angle = aIdx*msg.angle_increment + msg.angle_min;
             auto b_angle = bIdx*msg.angle_increment + msg.angle_min;
 
-            point_a.x = msg.ranges[aIdx]*std::cos(a_angle)-car_intrinsics.base_link;
+            point_a.x = msg.ranges[aIdx]*std::cos(a_angle);
             point_a.y = msg.ranges[aIdx]*std::sin(a_angle);
 
-            point_b.x = msg.ranges[bIdx]*std::cos(b_angle)-car_intrinsics.base_link;
+            point_b.x = msg.ranges[bIdx]*std::cos(b_angle);
             point_b.y = msg.ranges[bIdx]*std::sin(b_angle);
 
             point_a.z = point_b.z = 0.0;
