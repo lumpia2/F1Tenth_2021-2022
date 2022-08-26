@@ -52,6 +52,11 @@ struct rvizOpts
     std::string topic;
 };
 
+struct carIntrinsics
+{
+    double width, wheelbase, base_link;
+};
+
 /**
  * @brief Extract lidar instrinsic information from specific topic
  *

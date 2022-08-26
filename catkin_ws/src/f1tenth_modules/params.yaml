@@ -1,5 +1,5 @@
-
-
+# The distance between the front and
+# rear axle of the racecar
 # rear axle of the racecar
 wheelbase: 0.3302 # meters
 # width of racecar
@@ -22,4 +22,4 @@ kp: 0.7
 ki: 0.1
 kd: 0.1
 
-sp: 0.7
+sp: 0.9

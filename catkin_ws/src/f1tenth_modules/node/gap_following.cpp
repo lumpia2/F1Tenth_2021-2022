@@ -16,7 +16,7 @@
 #include <std_msgs/Int32MultiArray.h>
 
 #include <f1tenth_modules/RvizWrapper.hh>
-#include <f1tenth_modules/f1tenthUtils.hh>
+#include <f1tenth_modules/F1tenthUtils.hh>
 
 class GapFollowing
 {

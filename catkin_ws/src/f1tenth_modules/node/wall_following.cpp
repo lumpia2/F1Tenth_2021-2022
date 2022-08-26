@@ -18,7 +18,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <visualization_msgs/Marker.h>
 
-#include <f1tenth_modules/f1tenthUtils.hh>
+#include <f1tenth_modules/F1tenthUtils.hh>
 #include <f1tenth_modules/RvizWrapper.hh>
 
 /**
@@ -51,8 +51,11 @@ class WallFollowing
         double sp, prevErr, err;
         double p,i,d;
         double L;
-        double dt = 1/60.0;
-        double theta = 20.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
+        double dt;
+        double theta = 40.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
+
+        carIntrinsics car_intrinsics;
+        double lidarToMid;
 
         bool enabled, done;
 
@@ -77,6 +80,13 @@ class WallFollowing
             n.getParam("ki", gains.ki);
             n.getParam("kd", gains.kd);
             n.getParam("sp", sp);
+
+            // Car dimensions
+            n.getParam("wheelbase", car_intrinsics.wheelbase);
+            n.getParam("scan_distance_to_base_link", car_intrinsics.base_link);
+            n.getParam("width", car_intrinsics.width);
+
+            lidarToMid = car_intrinsics.base_link - (car_intrinsics.wheelbase/2.0);
 
             ROS_INFO("");
             ROS_INFO("\tkp: %f\tki: %f\tkd: %f", gains.kp, gains.ki, gains.kd);
@@ -142,10 +152,10 @@ class WallFollowing
             auto a_angle = aIdx*msg.angle_increment + msg.angle_min;
             auto b_angle = bIdx*msg.angle_increment + msg.angle_min;
 
-            point_a.x = msg.ranges[aIdx]*std::cos(a_angle);
+            point_a.x = msg.ranges[aIdx]*std::cos(a_angle)-car_intrinsics.base_link;
             point_a.y = msg.ranges[aIdx]*std::sin(a_angle);
 
-            point_b.x = msg.ranges[bIdx]*std::cos(b_angle);
+            point_b.x = msg.ranges[bIdx]*std::cos(b_angle)-car_intrinsics.base_link;
             point_b.y = msg.ranges[bIdx]*std::sin(b_angle);
 
             point_a.z = point_b.z = 0.0;
@@ -179,11 +189,11 @@ class WallFollowing
             // TODO: Change these limits to compare against radians to minimize conversions
             //
             if(abs_steer_ang_deg >= 0.0 && abs_steer_ang_deg<10.0)
-                drive.drive.speed = 1.5;
+                drive.drive.speed = 2.0;
             else if(abs_steer_ang_deg>=10.0 && abs_steer_ang_deg<=20.0)
-                drive.drive.speed = 1.0;
+                drive.drive.speed = 1.5;
             else
-                drive.drive.speed = 0.5;
+                drive.drive.speed = 1.0;
 
             drive.header.stamp = ros::Time::now();
             drive.header.frame_id = "drive";
@@ -212,7 +222,7 @@ class WallFollowing
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "wall_follow");
-    WallFollowing w(60.0);
+    WallFollowing w(120.0);
     ros::Rate rate(w.getRate());
 
     while(!w.isDone())
