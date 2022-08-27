@@ -18,7 +18,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <visualization_msgs/Marker.h>
 
-#include <f1tenth_modules/f1tenthUtils.hh>
+#include <f1tenth_modules/F1tenthUtils.hh>
 #include <f1tenth_modules/RvizWrapper.hh>
 
 /**
@@ -51,8 +51,8 @@ class WallFollowing
         double sp, prevErr, err;
         double p,i,d;
         double L;
-        double dt = 1/60.0;
-        double theta = 20.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
+        double dt;
+        double theta = 40.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
 
         bool enabled, done;
 
@@ -179,11 +179,11 @@ class WallFollowing
             // TODO: Change these limits to compare against radians to minimize conversions
             //
             if(abs_steer_ang_deg >= 0.0 && abs_steer_ang_deg<10.0)
-                drive.drive.speed = 1.5;
+                drive.drive.speed = 2.0;
             else if(abs_steer_ang_deg>=10.0 && abs_steer_ang_deg<=20.0)
-                drive.drive.speed = 1.0;
+                drive.drive.speed = 1.5;
             else
-                drive.drive.speed = 0.5;
+                drive.drive.speed = 1.0;
 
             drive.header.stamp = ros::Time::now();
             drive.header.frame_id = "drive";
@@ -212,7 +212,7 @@ class WallFollowing
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "wall_follow");
-    WallFollowing w(60.0);
+    WallFollowing w(120.0);
     ros::Rate rate(w.getRate());
 
     while(!w.isDone())

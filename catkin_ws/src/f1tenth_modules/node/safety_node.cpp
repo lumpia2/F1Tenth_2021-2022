@@ -2,6 +2,7 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/LaserScan.h>
 // TODO: include ROS msg type headers and libraries
+#include <f1tenth_modules/F1tenthUtils.hh>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <std_msgs/Bool.h>
 #include <cmath>
@@ -11,11 +12,6 @@
 //
 // (TODO) [nmm] Add a library that has predifined macros and structs
 //
-struct car_intrinsics
-{
-        double width, wheelbase, base_link;
-};
-
 struct lidar_intrinsics
 {
     double scan_inc,
@@ -25,7 +21,7 @@ struct lidar_intrinsics
 };
 
 std::vector<double> compute_car_perim(
-    const car_intrinsics& car_data, const lidar_intrinsics& lidar_data)
+    const carIntrinsics& car_data, const lidar_intrinsics& lidar_data)
 {
     std::vector<double> car_perim = std::vector<double>();
     car_perim.reserve(lidar_data.num_scans);
@@ -79,7 +75,7 @@ private:
     // Info to perform emergency braking
     std::vector<double> car_perimeter;
     lidar_intrinsics lidar;
-    car_intrinsics car;
+    carIntrinsics car;
     double ttc_threshold = 0.2;
     double speed;
 

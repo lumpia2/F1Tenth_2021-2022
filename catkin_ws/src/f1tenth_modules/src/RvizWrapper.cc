@@ -1,5 +1,4 @@
 #include <f1tenth_modules/RvizWrapper.hh>
-#include <f1tenth_modules/f1tenthUtils.hh>
 
 /////////////////////////////////////////////////////////////////////
 // RvizPoint

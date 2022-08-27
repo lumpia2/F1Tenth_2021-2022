@@ -137,7 +137,7 @@ include_directories(
 
 set( sources
   src/RvizWrapper.cc
-  src/f1tenthUtils.cc
+  src/F1tenthUtils.cc
 )
 
 set( src_nodes

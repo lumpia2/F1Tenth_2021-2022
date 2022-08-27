@@ -1,8 +1,7 @@
 #pragma once
-#include <f1tenth_modules/f1tenthUtils.hh>
-
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <f1tenth_modules/F1tenthUtils.hh>
 
 lidarIntrinsics getLidarInfoFromTopic(ros::NodeHandle &n , const std::string &topic)
 {
