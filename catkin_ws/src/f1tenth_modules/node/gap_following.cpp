@@ -29,17 +29,16 @@ class GapFollowing
         std::string driveTopic;
 
         lidarIntrinsics lidarData;
-        pointScan closestPoint;
+        pointScan closestPoint,
+                  furthestPoint;
 
         int muxIdx;
         int scanStartIdx, scanEndIdx;
         double rb;
         bool enabled;
 
-        std::unique_ptr<RvizPoint> bubblePoints;
-        std::unique_ptr<RvizPoint> maxSequencePoints;
-        std::unique_ptr<RvizPoint> cp;
-
+        std::unique_ptr<RvizPoint> bubble;
+        std::unique_ptr<RvizPoint> cp, fp;
 
     public:
 
@@ -60,10 +59,10 @@ class GapFollowing
 
         // subs
         scanSub = n.subscribe("/scan", 1, &GapFollowing::scan_cb, this);
-        muxSub = n.subscribe("mux", 1, &GapFollowing::mux_cb, this);
+        muxSub = n.subscribe("/mux", 1, &GapFollowing::mux_cb, this);
 
-        scanStartIdx = getScanIdx((-M_PI), lidarData);
-        scanEndIdx = getScanIdx((M_PI), lidarData);
+        scanStartIdx = getScanIdx((-M_PI/2.0), lidarData);
+        scanEndIdx = getScanIdx((M_PI/2.0), lidarData);
 
         ROS_INFO("");
         ROS_INFO("Start index of scan : %d", scanStartIdx);
@@ -86,20 +85,17 @@ class GapFollowing
                             .topic="/dynamic_viz"
                         };
 
-        // These points will be red.
-        bubblePoints = std::make_unique<RvizPoint>(n, opts);
-
-        // These points will be green.
-        opts.color=0x00ff00;
-        maxSequencePoints = std::make_unique<RvizPoint>(n, opts);
-
         // These points will be blue
-        opts.color=0x0000ff;
+        opts.color=0x00ff00;
+        fp = std::make_unique<RvizPoint>(n, opts);
         cp = std::make_unique<RvizPoint>(n, opts);
 
-        bubblePoints->addTransformPair("base_link", "laser");
-        maxSequencePoints->addTransformPair("base_link", "laser");
+        opts.color=0xff0000;
+        bubble = std::make_unique<RvizPoint>(n, opts);
+
         cp->addTransformPair("base_link", "laser");
+        fp->addTransformPair("base_link", "laser");
+        bubble->addTransformPair("base_link", "laser");
     }
 
     void mux_cb(const std_msgs::Int32MultiArray &msg)
@@ -109,9 +105,19 @@ class GapFollowing
 
     void scan_cb(const sensor_msgs::LaserScan &msg)
     {
-        auto min_point = std::make_pair(-1, msg.range_max);
+        std::vector<geometry_msgs::Point> bubble_point_vector;
+        std::pair<size_t, size_t> max_sequence_indices;
+        pointScan point_scan;
+        std::vector<size_t> zeros_indices;
+        geometry_msgs::Point point;
 
-        // Limit scans from -pi/2 -> pi/2
+        point.z = 0.0;
+
+        double r = rb;
+        double max_sequence{0.0};
+        auto min_point = std::make_pair(-1, msg.range_max);
+        unsigned bubble_start_idx, bubble_end_idx;
+
         for (size_t i = scanStartIdx; i <= scanEndIdx; i++)
         {
             if (msg.ranges[i] < min_point.second)
@@ -133,39 +139,20 @@ class GapFollowing
         closestPoint.p.y = closestPoint.dist*std::sin(closestPoint.angle);
         closestPoint.p.z = 0.0;
 
-        // This point is fine
         cp->addTranslation(closestPoint.p);
-
-        ROS_INFO("");
-        ROS_INFO("\tClosest point angle : %f", closestPoint.angle);
-        ROS_INFO("\tClosest point distance : %f", closestPoint.dist);
 
         // calculate start and end range of the bubble within the scan
         if (closestPoint.dist < rb)
         {
-            ROS_WARN("MATH ERROR");
-            return;
-            // what do we want to do here?
-            // maybe go through the full range of start to end indices
+            bubble_start_idx = scanStartIdx;
+            bubble_end_idx = scanEndIdx;
+        } else
+        {
+            auto theta = std::asin(rb/closestPoint.dist);
+            bubble_start_idx = getScanIdx(closestPoint.angle - theta, lidarData);
+            bubble_end_idx = getScanIdx(closestPoint.angle + theta, lidarData);
         }
 
-        auto theta = std::asin(rb/closestPoint.dist);
-        auto bubble_start_idx = getScanIdx(closestPoint.angle - theta, lidarData);
-        auto bubble_end_idx = getScanIdx(closestPoint.angle + theta, lidarData);
-        ROS_INFO("\ttheta : %f", theta);
-        ROS_INFO("\tBubble start index %d at angle %f", bubble_start_idx,bubble_start_idx*msg.angle_increment + msg.angle_min);
-        ROS_INFO("\tBubble end index %d angle %f", bubble_end_idx,bubble_end_idx*msg.angle_increment + msg.angle_min);
-        // ROS_INFO("");
-
-        std::vector<size_t> zeros_indices{0};
-        std::vector<geometry_msgs::Point> bubble_point_vector;
-
-        // Holds the start and the end of a sequence of numbers
-        std::pair<size_t, size_t> max_sequence_indices;
-        geometry_msgs::Point point;
-        pointScan point_scan;
-        double r = rb;
-        double max_sequence{0.0};
 
         // Check all points in the scan range of the bubble
         for (size_t i = bubble_start_idx; i <= bubble_end_idx; i++)
@@ -176,51 +163,55 @@ class GapFollowing
             point_scan.angle = i*msg.angle_increment + msg.angle_min;
             point_scan.dist = msg.ranges[i];
 
-            r = std::sqrt(
-                std::pow(point_scan.dist,2)
-                + std::pow(closestPoint.dist,2)
-                - 2*point_scan.dist*closestPoint.dist*std::cos(point_scan.angle - closestPoint.angle)
-                );
+            // r = std::sqrt(
+            //     std::pow(point_scan.dist,2)
+            //     + std::pow(closestPoint.dist,2)
+            //     - 2*point_scan.dist*closestPoint.dist*std::cos(point_scan.angle - closestPoint.angle)
+            //     );
 
-            //
-            // TODO(nmm): Add some sort of configuration to turn
-            //  the rviz functionality on and off
-            //
+            // //
+            // // TODO(nmm): Add some sort of configuration to turn
+            // //  the rviz functionality on and off
+            // //
 
-            // Store the index of the 'zero' and add the points
-            // rectangular coordinates
-            if (r < rb)
-            {
-                point.x = msg.ranges[i]*std::cos(point_scan.angle);
-                point.y = msg.ranges[i]*std::sin(point_scan.angle);
-                point.z = 0.00;
+            // // Store the index of the 'zero' and add the points
+            // // rectangular coordinates
+            // if (r < rb)
+            // {
+            //     point.x = msg.ranges[i]*std::cos(point_scan.angle);
+            //     point.y = msg.ranges[i]*std::sin(point_scan.angle);
+            //     point.z = 0.00;
 
-                // ROS_INFO("pushing point at dist %f angle %f", msg.ranges[i], point_scan.angle);
+            //     // ROS_INFO("pushing point at dist %f angle %f", msg.ranges[i], point_scan.angle);
 
-                zeros_indices.push_back(i);
-                bubble_point_vector.push_back(point);
-            }
+            //     zeros_indices.push_back(i);
+            //     bubble_point_vector.push_back(point);
+            // }
+            point.x = point_scan.dist*std::cos(point_scan.angle);
+            point.y = point_scan.dist*std::sin(point_scan.angle);
+            bubble_point_vector.push_back(point);
+            zeros_indices.push_back(i);
         }
 
         // These points are fine now
-        bubblePoints->addTranslation(bubble_point_vector);
+        bubble->addTranslation(bubble_point_vector);
 
         //
         // Checking for the largest non-zero sequence
         //
 
         // from the start of the scan to the first indexed zero of the bubble
-        if (zeros_indices.front()-scanStartIdx > max_sequence)
+        if (zeros_indices.front()-1 -scanStartIdx > max_sequence)
         {
             max_sequence_indices.first = scanStartIdx;
-            max_sequence_indices.second = zeros_indices.front();
+            max_sequence_indices.second = zeros_indices.front()-1;
             max_sequence = zeros_indices.front() - scanStartIdx;
         }
 
         // This should be thought out. If the angular
         // sweep of the bubble is greater than 50%(?) that
         // of the scan then this code is necessary
-        for (size_t i = 0; i < zeros_indices.size(); i++)
+        for (size_t i = 1; i < zeros_indices.size(); i++)
         {
             if (zeros_indices[i] < scanStartIdx)
                 continue;
@@ -235,6 +226,7 @@ class GapFollowing
             }
         }
 
+        // Max Sequence
         // last indexed zero to the end of the scan
         if (scanEndIdx-zeros_indices.back() > max_sequence)
         {
@@ -242,11 +234,6 @@ class GapFollowing
             max_sequence_indices.second = scanEndIdx;
             max_sequence = scanEndIdx-scanStartIdx-zeros_indices.back();
         }
-
-        // ROS_INFO("");
-        ROS_INFO("\tmax sequence start angle: %f", max_sequence_indices.first*msg.angle_increment + msg.angle_min);
-        ROS_INFO("\tmax sequence end angle: %f", max_sequence_indices.second*msg.angle_increment + msg.angle_min);
-        ROS_INFO("");
 
         // Find the largest point away from us within the max sequence
         auto max_point = std::make_pair(-1, msg.range_min);
@@ -259,6 +246,16 @@ class GapFollowing
             }
         }
 
+        furthestPoint = {
+            .dist = max_point.second,
+            .angle = max_point.first*msg.angle_increment + msg.angle_min,
+        };
+
+        furthestPoint.p.x = furthestPoint.dist*std::cos(furthestPoint.angle);
+        furthestPoint.p.y = furthestPoint.dist*std::sin(furthestPoint.angle);
+
+        fp->addTranslation(furthestPoint.p);
+
         if (max_point.first < 0)
             return;
 
@@ -268,10 +265,13 @@ class GapFollowing
         drive.header.frame_id = "drive_gap_following";
         drive.drive.steering_angle = max_point.first*msg.angle_increment + msg.angle_min;
         drive.drive.steering_angle_velocity = 0.0;
-        drive.drive.speed = 1.0;
+        drive.drive.speed = 1.5;
 
         if (enabled)
+        {
+            // ROS_INFO("AOSIDJF");
             drivePub.publish(drive);
+        }
     }
 };
 
