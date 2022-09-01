@@ -7,8 +7,8 @@
  *
  * @copyright Copyright (c) 2022
  */
-#ifndef F1TENTH_UTILS_HH
-#define F1TENTH_UTILS_HH
+#ifndef F1TENTH_UTILS_H_
+#define F1TENTH_UTILS_H_
 
 #include <cmath>
 #include <string>

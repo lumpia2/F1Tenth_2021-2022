@@ -8,18 +8,30 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include <ros/ros.h>
+// System library
+#include <signal.h>
 
+// Ros includes
+#include <ros/ros.h>
+#include <rosbag/bag.h>
+
+#include <std_msgs/Float64.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/LaserScan.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
 #include <std_msgs/Int32MultiArray.h>
+
+// TF2
 #include <tf2_ros/transform_listener.h>
 #include <visualization_msgs/Marker.h>
 
+// Custom libraries and messages
 #include <f1tenth_modules/F1tenthUtils.hh>
 #include <f1tenth_modules/RvizWrapper.hh>
+#include <taskpool/TaskPool.hh>
+#include <f1tenth_modules/PidInfo.h>
+
 
 /**
  * (todo)
@@ -31,7 +43,7 @@ class WallFollowing
 {
     private:
         ros::NodeHandle n;
-        ros::Publisher drivePub, markerPub;
+        ros::Publisher drivePub, markerPub, pidPub;
         ros::Subscriber scanSub, muxSub;
 
         tf2_ros::Buffer tBuffer;
@@ -39,11 +51,14 @@ class WallFollowing
         visualization_msgs::Marker point;
         ackermann_msgs::AckermannDriveStamped drive;
         geometry_msgs::TransformStamped baseLinkTf;
+        std_msgs::Header pidHeader;
 
         std::string driveTopic;
         pidGains gains;
         lidarIntrinsics lidarData;
+
         std::unique_ptr<RvizPoint> rvizPoint;
+        std::unique_ptr<TaskPool> task_manager;
 
         int muxIdx;
         int aIdx, bIdx;
@@ -85,6 +100,7 @@ class WallFollowing
             // pubs
             drivePub = n.advertise<ackermann_msgs::AckermannDriveStamped>(driveTopic, 1);
             markerPub = n.advertise<visualization_msgs::Marker>("/dynamic_viz", 10);
+            pidPub = n.advertise<f1tenth_modules::PidInfo>("/pid_info", 10);
 
             // subs
             scanSub = n.subscribe("/scan", 1, &WallFollowing::lidar_cb, this);
@@ -113,8 +129,12 @@ class WallFollowing
                  .pose=pose, .scale=scale, .topic="/dynamic_viz"};
             rvizPoint = std::make_unique<RvizPoint>(n, opts);
             rvizPoint->addTransformPair("base_link", "laser_model");
-        }
 
+            task_manager = std::make_unique<TaskPool>();
+            task_manager->start();
+
+            pidHeader.frame_id = "pid_info";
+        }
 
         void mux_cb(const std_msgs::Int32MultiArray &msg)
         {
@@ -123,7 +143,7 @@ class WallFollowing
             enabled = msg.data[muxIdx];
             done = !enabled;
 
-            if(enabled)
+            if (enabled)
                 ROS_INFO("PID node enabled.");
             else
                 ROS_INFO("PID node disabled.");
@@ -161,12 +181,19 @@ class WallFollowing
             if(enabled)
                 pid_control(err);
 
+            pidHeader.stamp = ros::Time::now();
+            f1tenth_modules::PidInfo pid_info;
+            pid_info.error = err;
+            pid_info.measured_point = dist_1;
+            pid_info.header = pidHeader;
+            pid_info.set_point = sp;
+
             prevErr = err;
         }
 
         void pid_control(const double &err)
         {
-            ROS_INFO("Error: %f", err);
+            // PID Controller
             p = err;
             i += err*dt; // may need to be clamped
             d = (err-prevErr)/dt;
@@ -211,6 +238,7 @@ class WallFollowing
 
 int main(int argc, char **argv)
 {
+    // signal(SIGINT, sig_handler);
     ros::init(argc, argv, "wall_follow");
     WallFollowing w(120.0);
     ros::Rate rate(w.getRate());

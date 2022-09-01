@@ -16,11 +16,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   tf2_geometry_msgs
+  rosbag
 )
+
 roslaunch_add_file_check(launch)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+add_subdirectory(lib/TaskPool)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -55,6 +58,7 @@ roslaunch_add_file_check(launch)
 add_message_files(
   FILES
   PointDist.msg
+  PidInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -153,7 +157,10 @@ set( src_nodes
 foreach( src_file ${src_nodes} )
   get_filename_component(src_name ${src_file} NAME_WE)
   add_executable(${src_name} ${src_file} ${sources})
-  target_link_libraries(${src_name} ${catkin_LIBRARIES})
+  target_link_libraries(${src_name}
+    ${catkin_LIBRARIES}
+    taskpool
+    )
 endforeach()
 
 
@@ -168,8 +175,9 @@ endforeach()
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
+# target_link_libraries(
 #   ${catkin_LIBRARIES}
+#   taskpool
 # )
 
 #############
