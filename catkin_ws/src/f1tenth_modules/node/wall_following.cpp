@@ -17,6 +17,8 @@
 #include <std_msgs/Int32MultiArray.h>
 #include <tf2_ros/transform_listener.h>
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/Float64.h>
+#include <rosbag/bag.h>
 
 #include <f1tenth_modules/f1tenthUtils.hh>
 #include <f1tenth_modules/RvizWrapper.hh>
@@ -55,6 +57,8 @@ class WallFollowing
         double theta = 20.0*M_PI/180.0; // [theta = 20 deg] (0 < theta < 70deg)
 
         bool enabled, done;
+
+        rosbag::Bag bag;
 
     public:
         WallFollowing() = delete;
@@ -124,9 +128,15 @@ class WallFollowing
             done = !enabled;
 
             if(enabled)
+            {
                 ROS_INFO("PID node enabled.");
+                bag.open("/home/ras/F1Tenth/F1Tenth_2021-2022/catkin_ws/src/f1tenth_modules/bags/PID_info.bag", rosbag::bagmode::Write);
+            }
             else
+            {
                 ROS_INFO("PID node disabled.");
+                bag.close();
+            }
 
             // (TODO) Maybe reset the PID values when "else"
         }
@@ -170,6 +180,21 @@ class WallFollowing
             p = err;
             i += err*dt; // may need to be clamped
             d = (err-prevErr)/dt;
+
+            std_msgs::Float64 p_m;
+            std_msgs::Float64 i_m;
+            std_msgs::Float64 d_m;
+            std_msgs::Float64 err_m;
+
+            p_m.data = gains.kp;
+            i_m.data = gains.ki;
+            d_m.data = gains.kd;
+            err_m.data = err;
+
+            bag.write("P", ros::Time::now(), p_m);
+            bag.write("I", ros::Time::now(), i_m);
+            bag.write("D", ros::Time::now(), d_m);
+            bag.write("Error", ros::Time::now(), err_m);
 
             const auto steer_angle = -(gains.kp*p + gains.ki*i + gains.kd*d);
             const auto steer_ang_deg = steer_angle*(180.0/M_PI);
