@@ -107,8 +107,11 @@ class GapFollowing
     {
         std::vector<geometry_msgs::Point> bubble_point_vector;
         std::pair<size_t, size_t> max_sequence_indices;
-        pointScan point_scan;
         std::vector<size_t> zeros_indices;
+
+        auto scan_cp = msg.ranges;
+
+        pointScan point_scan;
         geometry_msgs::Point point;
 
         point.z = 0.0;
@@ -120,10 +123,10 @@ class GapFollowing
 
         for (size_t i = scanStartIdx; i <= scanEndIdx; i++)
         {
-            if (msg.ranges[i] < min_point.second)
+            if (scan_cp[i] < min_point.second)
             {
                 min_point.first = i;
-                min_point.second = msg.ranges[i];
+                min_point.second = scan_cp[i];
             }
         }
 
@@ -161,36 +164,32 @@ class GapFollowing
                 continue;
 
             point_scan.angle = i*msg.angle_increment + msg.angle_min;
-            point_scan.dist = msg.ranges[i];
+            point_scan.dist = scan_cp[i];
 
-            // r = std::sqrt(
-            //     std::pow(point_scan.dist,2)
-            //     + std::pow(closestPoint.dist,2)
-            //     - 2*point_scan.dist*closestPoint.dist*std::cos(point_scan.angle - closestPoint.angle)
-            //     );
+            r = std::sqrt(
+                std::pow(point_scan.dist,2)
+                + std::pow(closestPoint.dist,2)
+                - 2*point_scan.dist*closestPoint.dist*std::cos(point_scan.angle - closestPoint.angle)
+                );
 
-            // //
-            // // TODO(nmm): Add some sort of configuration to turn
-            // //  the rviz functionality on and off
-            // //
+            //
+            // TODO(nmm): Add some sort of configuration to turn
+            //  the rviz functionality on and off
+            //
 
-            // // Store the index of the 'zero' and add the points
-            // // rectangular coordinates
-            // if (r < rb)
-            // {
-            //     point.x = msg.ranges[i]*std::cos(point_scan.angle);
-            //     point.y = msg.ranges[i]*std::sin(point_scan.angle);
-            //     point.z = 0.00;
+            // Store the index of the 'zero' and add the points
+            // rectangular coordinates
+            if (r < rb)
+            {
+                point.x = scan_cp[i]*std::cos(point_scan.angle);
+                point.y = scan_cp[i]*std::sin(point_scan.angle);
+                point.z = 0.00;
 
-            //     // ROS_INFO("pushing point at dist %f angle %f", msg.ranges[i], point_scan.angle);
+                // ROS_INFO("pushing point at dist %f angle %f", scan_cp[i], point_scan.angle);
 
-            //     zeros_indices.push_back(i);
-            //     bubble_point_vector.push_back(point);
-            // }
-            point.x = point_scan.dist*std::cos(point_scan.angle);
-            point.y = point_scan.dist*std::sin(point_scan.angle);
-            bubble_point_vector.push_back(point);
-            zeros_indices.push_back(i);
+                zeros_indices.push_back(i);
+                bubble_point_vector.push_back(point);
+            }
         }
 
         // These points are fine now
@@ -201,7 +200,7 @@ class GapFollowing
         //
 
         // from the start of the scan to the first indexed zero of the bubble
-        if (zeros_indices.front()-1 -scanStartIdx > max_sequence)
+        if (zeros_indices.front()-1 - scanStartIdx > max_sequence)
         {
             max_sequence_indices.first = scanStartIdx;
             max_sequence_indices.second = zeros_indices.front()-1;
@@ -239,10 +238,10 @@ class GapFollowing
         auto max_point = std::make_pair(-1, msg.range_min);
         for (size_t i = max_sequence_indices.first; i < max_sequence_indices.second; i++)
         {
-            if (msg.ranges[i] >= max_point.second)
+            if (scan_cp[i] >= max_point.second)
             {
                 max_point.first = i;
-                max_point.second = msg.ranges[i];
+                max_point.second = scan_cp[i];
             }
         }
 
@@ -268,9 +267,20 @@ class GapFollowing
         drive.drive.speed = 1.5;
 
         if (enabled)
-        {
-            // ROS_INFO("AOSIDJF");
             drivePub.publish(drive);
+    }
+
+    std::vector<float> find_disparities(std::vector<float> points)
+    {
+        float threshold = 0;
+
+        for (size_t i = 1; i < points.size(); i++)
+        {
+            auto disparity = points[i] - points[i-1];
+            if (disparity >= threshold)
+            {
+                // set virtual points
+            }
         }
     }
 };
