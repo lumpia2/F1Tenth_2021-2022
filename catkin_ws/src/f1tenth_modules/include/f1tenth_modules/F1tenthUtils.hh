@@ -66,8 +66,6 @@ struct carIntrinsics
  */
 lidarIntrinsics getLidarInfoFromTopic(ros::NodeHandle &n , const std::string &topic);
 
-
-
 /**
  * @brief Returns the index for a given angle in a list of lidar scan ranges
  *

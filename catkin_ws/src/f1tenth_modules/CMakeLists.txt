@@ -145,10 +145,10 @@ set( sources
 )
 
 set( src_nodes
-  node/point_dist.cpp
-  node/safety_node.cpp
-  node/wall_following.cpp
-  node/gap_following.cpp
+  node/PointDist.cc
+  node/SafetyNode.cc
+  node/WallFollowing.cc
+  node/GapFollowing.cc
 )
 
 ## Declare a C++ executable
