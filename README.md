@@ -3,7 +3,7 @@ Official Repository for Pitt RAS F1Tenth 2021-2022 Team
 
 To get "up to speed", take a look at our [Getting Started](https://docs.google.com/document/d/1MPcZuDyK1n8SSpPkCYEtRkjRHpZaNV0-Qj5Cd3Ra4kE/edit?usp=sharing) Guide
 
-Once you've done that, make sure that you understand the topics covered each week so you can hop on a current project.
+This repository follows the resources found at https://f1tenth.org
 
 ## Introduction to ROS - Part 1
 
