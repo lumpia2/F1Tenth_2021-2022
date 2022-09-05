@@ -34,8 +34,7 @@ Online tutortials can be found [here](http://wiki.ros.org/ROS/Tutorials).
 
 - [Intel Realsense d435](https://www.intelrealsense.com/depth-camera-d435/).
 - Adam Johnson's perception [slides](https://docs.google.com/presentation/d/1OpZpCFbR4MlRBM9_tBVKmbXkI15ABNUqcTTLkb2kKVQ/edit?usp=sharing).
-
-[F1tenth car build link](https://f1tenth.org/build.html) to get started.
-[F1tenth software stack modules](https://f1tenth.org/learn.html)
+- F1tenth car build [link](https://f1tenth.org/build.html)
+- F1tenth software stack modules [link](https://f1tenth.org/learn.html)
 
 
