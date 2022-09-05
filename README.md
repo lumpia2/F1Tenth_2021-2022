@@ -16,10 +16,20 @@ Try and keep your coding style consistent.
 ## Running the simulator
 
 1. Clone the repository
+``` $ git clone https://github.com/Pitt-RAS/F1Tenth_2021-2022.git ```
 2. Initialize submodules
 ```
 $ cd F1Tenth_2021-2022
 $ git submodules update --init --recursive
+```
+3. Install Catkin Tools if you haven't already installed them
+```
+$ sudo sh \
+    -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" \
+        > /etc/apt/sources.list.d/ros-latest.list'
+$ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get install python3-catkin-tools
 ```
 
 
