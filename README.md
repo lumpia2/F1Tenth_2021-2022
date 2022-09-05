@@ -5,6 +5,24 @@ To get "up to speed", take a look at our [Getting Started](https://docs.google.c
 
 This repository follows the resources found at https://f1tenth.org
 
+## Contributing
+
+1. Fork and clone the repository.
+2. Make a branch relative to what you're working on.
+3. Once you've developed and tested your changes create PR with a description of your changes and any relevant tests.
+
+Try and keep your coding style consistent.
+
+## Running the simulator
+
+1. Clone the repository
+2. Initialize submodules
+```
+$ cd F1Tenth_2021-2022
+$ git submodules update --init --recursive
+```
+
+
 ## Introduction to ROS - Part 1
 
 This project uses the ROS 1 framework to connect several nodes and states together. Fundamental knowledge of
