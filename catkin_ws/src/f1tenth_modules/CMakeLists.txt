@@ -150,6 +150,7 @@ set( src_nodes
   node/WallFollowing.cc
   node/GapFollowing.cc
   node/MuxNode.cc
+  node/KeyInput.cc
 )
 
 ## Declare a C++ executable

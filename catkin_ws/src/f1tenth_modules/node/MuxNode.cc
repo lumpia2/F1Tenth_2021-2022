@@ -44,7 +44,7 @@ private:
 
                 muxIn.shutdown();
                 brake();
-                ROS_INFO("Switching to state %s", States::Off::NAME);
+                ROS_INFO("Switching to state %s", States::Off::NAME.c_str());
                 currState = States::Off::NAME;
 
                 break;
@@ -54,7 +54,7 @@ private:
 
                 muxIn.shutdown();
                 muxIn = n.subscribe(States::Manual::DRIVE_TOPIC, 1, &Mux::muxIn_cb, this);
-                ROS_INFO("Switching to state %s", States::Manual::NAME);
+                ROS_INFO("Switching to state %s", States::Manual::NAME.c_str());
                 currState = States::Manual::NAME;
 
                 break;
@@ -64,7 +64,7 @@ private:
 
                 muxIn.shutdown();
                 muxIn = n.subscribe(States::WallFollowing::DRIVE_TOPIC, 1, &Mux::muxIn_cb, this);
-                ROS_INFO("Switching to state %s", States::WallFollowing::NAME);
+                ROS_INFO("Switching to state %s", States::WallFollowing::NAME.c_str());
                 currState = States::WallFollowing::NAME;
 
                 break;
@@ -74,14 +74,14 @@ private:
 
                 muxIn.shutdown();
                 muxIn = n.subscribe(States::GapFollowing::DRIVE_TOPIC, 1, &Mux::muxIn_cb, this);
-                ROS_INFO("Switching to state %s", States::GapFollowing::NAME);
+                ROS_INFO("Switching to state %s", States::GapFollowing::NAME.c_str());
                 currState = States::GapFollowing::NAME;
 
                 break;
             default:
                 muxIn.shutdown();
                 brake();
-                ROS_ERROR("Unkown state change : (%d)", msg.data);
+                ROS_WARN("Unkown state change : (%d)", msg.data);
                 currState == "ERR";
 
                 break;

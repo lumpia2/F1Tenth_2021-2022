@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Terminal Input -->
+    <node pkg="f1tenth_modules" name="KeyInput" type="KeyInput" output="screen"/>
+
+z    <!-- NEED KILLIANS JOYSTICK NODE-->
+
+    <!-- MUX-->
+    <node pkg="f1tenth_modules" name="MuxNode" type="MuxNode" output="screen">
+        <!-- ??rosparams??-->
+    </node>
+
+    <!-- Wallfollowing -->
+
+    <!-- GapFollowing -->
+
+    <!-- EmergencyBrake -->
+    <node pkg="f1tenth_modules" name="SafetyNode" type="SafetyNode" output="screen">
+        <rosparam command="load" file="$(find f1tenth_modules)/params.yaml"/>
+    </node>
+
+</launch>

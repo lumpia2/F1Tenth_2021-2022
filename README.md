@@ -5,11 +5,9 @@ To get "up to speed", take a look at our [Getting Started](https://docs.google.c
 
 Once you've done that, make sure that you understand the topics covered each week so you can hop on a current project.
 
-## 10/3 - 10/9: Introduction to ROS - Part 1
+Introduction to ROS - Part 1
 
-We learned the basic concepts of ROS: what it is, how it works, and how we build robots. We covered Nodes, messages, topics, and how they work into the overarching graph of a robotic system.
-
-The slide deck used is located [here.](https://docs.google.com/presentation/d/10-BS7uOYaSVuBZqPPlhUMrAvJ8rqE7bGuX3cjUwzc6Q/edit?usp=sharing)
+[Intro Slides].(https://docs.google.com/presentation/d/10-BS7uOYaSVuBZqPPlhUMrAvJ8rqE7bGuX3cjUwzc6Q/edit?usp=sharing)
 
 We then moved to ROS tutorials 1-5. This involved
 
