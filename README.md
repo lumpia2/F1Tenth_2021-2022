@@ -7,7 +7,7 @@ Once you've done that, make sure that you understand the topics covered each wee
 
 Introduction to ROS - Part 1
 
-Intro [slides].(https://docs.google.com/presentation/d/10-BS7uOYaSVuBZqPPlhUMrAvJ8rqE7bGuX3cjUwzc6Q/edit?usp=sharing)
+Intro [slides.](https://docs.google.com/presentation/d/10-BS7uOYaSVuBZqPPlhUMrAvJ8rqE7bGuX3cjUwzc6Q/edit?usp=sharing)
 
 We then moved to ROS tutorials 1-5. This involved
 
