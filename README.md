@@ -11,12 +11,18 @@ This repository follows the resources found at https://f1tenth.org
 2. Make a branch relative to what you're working on.
 3. Once you've developed and tested your changes create PR with a description of your changes and any relevant tests.
 
+NOTE: You will need to add any IDE config files to git exclude before landing any changes.
+
 Try and keep your coding style consistent.
 
 ## Running the simulator
 
+You will need ROS Noetic installed and sourced before using this repo. Installation guide can be found [here](http://wiki.ros.org/noetic/Installation/Ubuntu).
+
 1. Clone the repository
-``` $ git clone https://github.com/Pitt-RAS/F1Tenth_2021-2022.git ```
+```
+$ git clone https://github.com/Pitt-RAS/F1Tenth_2021-2022.git
+```
 2. Initialize submodules
 ```
 $ cd F1Tenth_2021-2022
@@ -30,6 +36,16 @@ $ sudo sh \
 $ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 $ sudo apt-get update
 $ sudo apt-get install python3-catkin-tools
+```
+4. Build the modules with catkin
+```
+$ cd catkin_ws ## This should be the workspace located in the cloned repository
+$ catkin build
+```
+- You may need to source the workspace and rebuild the project
+```
+$ source devel/setup.bash
+$ catkin build
 ```
 
 
