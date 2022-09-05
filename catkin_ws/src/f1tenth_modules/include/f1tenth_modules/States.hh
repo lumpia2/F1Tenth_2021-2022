@@ -2,40 +2,51 @@
 #define STATES_H_
 
 #include <string>
-
-/**
- * @brief Mux states that control the drive topic
- *
- */
-typedef enum MuxStates
-{
-    OFF=0,
-    MANUAL,
-    WALLFOLLOWING,
-    GAPFOLLOWING,
-
-    _SIZE_
-};
-
+#include <vector>
+#include <memory>
 
 namespace States {
-
-    typedef struct Manual
+    /**
+     * @brief Mux states that control the drive topic
+     *
+     */
+    typedef enum StateId
     {
-        const std::string driveTopic = "/manual";
+        OFF=0,
+        MANUAL,
+        WALLFOLLOWING,
+        GAPFOLLOWING,
+
+        _SIZE_
     };
 
-    typedef struct WallFollowing
+    namespace Off
     {
-        const std::string driveTopic = "/wall_following";
-    };
+        const std::string NAME = "OFF";
+        constexpr char INPUT_CHAR = 'b';
+    } // namespace Off
 
-    typedef struct GapFollowing
+    namespace Manual
     {
-        const std::string driveTopic = "/gap_following";
-    };
+        const std::string NAME = "MANUAL";
+        const std::string DRIVE_TOPIC = "/manual";
+        constexpr char INPUT_CHAR = 'm';
+    } // namespace Manual
+
+    namespace WallFollowing
+    {
+        const std::string NAME = "WALL-FOLLOWING";
+        const std::string DRIVE_TOPIC = "/wall_following";
+        constexpr char INPUT_CHAR = 'f';
+    } // namespace WallFollowing
+
+    namespace GapFollowing
+    {
+        const std::string NAME = "GAP-FOLLOWING";
+        const std::string DRIVE_TOPIC = "/gap_following";
+        constexpr char INPUT_CHAR = 'g';
+    } // namespace GapFollowing
 
 } // namespace States
-
 
 #endif

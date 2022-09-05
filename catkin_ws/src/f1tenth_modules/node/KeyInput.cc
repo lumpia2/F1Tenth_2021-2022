@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <std_msgs/String.h>
+#include <std_msgs/UInt8.h>
 
 #include <termios.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     // topic but for now manually specific it.
     std::string inputTopic{"/input"};
 
-    ros::Publisher inputPub = n.advertise<std_msgs::String>(inputTopic, 10);
+    ros::Publisher inputPub = n.advertise<std_msgs::UInt8>(inputTopic, 10);
 
     // Terminal Interface
     static struct termios curr_t, new_t;
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &act, NULL);
 
     char c;
-    std_msgs::String msg;
+    std_msgs::UInt8 msg;
 
     while (ros::ok() && !done)
     {

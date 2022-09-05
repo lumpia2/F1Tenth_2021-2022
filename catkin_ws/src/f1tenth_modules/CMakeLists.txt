@@ -58,7 +58,7 @@ add_subdirectory(lib/TaskPool)
 add_message_files(
   FILES
   PointDist.msg
-  PidInfo.msg
+  # PidInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -149,6 +149,7 @@ set( src_nodes
   node/SafetyNode.cc
   node/WallFollowing.cc
   node/GapFollowing.cc
+  node/MuxNode.cc
 )
 
 ## Declare a C++ executable
