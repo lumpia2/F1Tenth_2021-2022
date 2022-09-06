@@ -21,7 +21,7 @@ You will need ROS Noetic installed and sourced before using this repo. Installat
 
 1. Clone the repository
 ```
-$ git clone https://github.com/Pitt-RAS/F1Tenth_2021-2022.git
+$ git clone https://github.com/Pitt-RAS/ras-f1tenth
 ```
 2. Initialize submodules
 ```
