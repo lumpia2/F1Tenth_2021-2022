@@ -15,7 +15,7 @@ NOTE: You will need to add any IDE config files to git exclude before landing an
 
 Try and keep your coding style consistent.
 
-## Running the simulator
+## Setup
 
 You will need ROS Noetic installed and sourced before using this repo. Installation guide can be found [here](http://wiki.ros.org/noetic/Installation/Ubuntu).
 
@@ -47,7 +47,8 @@ You may need to source the workspace and rebuild the project
 $ source devel/setup.bash
 $ catkin build
 ```
-5. Run any of the launch files found in [this](https://github.com/Pitt-RAS/F1Tenth_2021-2022/tree/main/catkin_ws/src/f1tenth_modules/launch/sims) directory.
+### Running the Simulator
+Run any of the launch files found in [this](https://github.com/Pitt-RAS/F1Tenth_2021-2022/tree/main/catkin_ws/src/f1tenth_modules/launch/sims) directory.
 ```
 $ roslaunch f1tenth_modules <launch file>
 ```
