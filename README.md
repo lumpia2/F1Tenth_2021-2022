@@ -17,18 +17,23 @@ Try and keep your coding style consistent.
 
 ## Setup
 
+Update your local packages if you haven't alraedy by running ```# sudo apt-get update```
 You will need ROS Noetic installed and sourced before using this repo. Installation guide can be found [here](http://wiki.ros.org/noetic/Installation/Ubuntu).
 
-1. Clone the repository
+1. Download the ackermann_msgs package for ROS
 ```
-$ git clone https://github.com/Pitt-RAS/F1Tenth_2021-2022.git
+$ sudo apt install ros-noetic-ackermann-msgs
 ```
-2. Initialize submodules
+2. Clone the repository
 ```
-$ cd F1Tenth_2021-2022
-$ git submodules update --init --recursive
+$ git clone https://github.com/Pitt-RAS/ras-f1tenth
 ```
-3. Install Catkin Tools if you haven't already installed them
+3. Initialize submodules
+```
+$ cd ras-f1tenth
+$ git submodule update --init --recursive
+```
+4. Install Catkin Tools if you haven't already installed them
 ```
 $ sudo sh \
     -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" \
@@ -37,7 +42,7 @@ $ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 $ sudo apt-get update
 $ sudo apt-get install python3-catkin-tools
 ```
-4. Build the modules with catkin
+5. Build the modules with catkin
 ```
 $ cd catkin_ws ## This should be the workspace located in the cloned repository
 $ catkin build
