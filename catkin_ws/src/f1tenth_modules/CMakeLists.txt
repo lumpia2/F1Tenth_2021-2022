@@ -58,7 +58,7 @@ add_subdirectory(lib/TaskPool)
 add_message_files(
   FILES
   PointDist.msg
-  # PidInfo.msg
+  PidInfo.msg
 )
 
 ## Generate services in the 'srv' folder
