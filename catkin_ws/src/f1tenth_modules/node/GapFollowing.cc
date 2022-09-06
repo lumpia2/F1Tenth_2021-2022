@@ -239,19 +239,22 @@ class GapFollowing
         }
 
         // Virtualize the points based on disparity
+
         std::vector<float> max_sequence_vector(&scan_cp[max_sequence_indices.first], &scan_cp[max_sequence_indices.second]);
-        find_disparities(max_sequence_vector);
+
+        auto filtered_points = find_disparities(max_sequence_vector);
 
         // Find the largest point away from us within the max sequence
         auto max_point = std::make_pair(-1, msg.range_min);
-        for (size_t i = 0; i < max_sequence_vector.size(); i++)
+        for (size_t i = 0; i < filtered_points.size(); i++)
         {
             if (max_sequence_vector[i] >= max_point.second)
             {
                 max_point.first = max_sequence_indices.first+ i;
-                max_point.second = max_sequence_vector[i];
+                max_point.second = filtered_points[i];
             }
         }
+
         // for (size_t i = max_sequence_indices.first; i < max_sequence_indices.second; i++)
         // {
         //     if (scan_cp[i] >= max_point.second)
@@ -286,8 +289,9 @@ class GapFollowing
             drivePub.publish(drive);
     }
 
-    void find_disparities(std::vector<float> &points)
+    std::vector<float> find_disparities(std::vector<float> points)
     {
+        std::cout << "yo"<< std::endl;
         for (size_t i = 1; i < points.size(); i++)
         {
             // find disparity
@@ -296,11 +300,18 @@ class GapFollowing
 
             if (std::abs(disparity) >= dispThreshold)
             {
+                // ROS_INFO("Found disparity");
                 // find direction of the disparity
                 if (disparity < 0) //clockwise
                 {
+                    ROS_INFO("Clockwise disparity");
                     // Calculate end index of bufferered points
-                    auto end_idx = getScanIdx((i*lidarData.scan_inc + lidarData.min_angle) + dispBufferAngle, lidarData);
+                    // auto end_idx = getScanIdx((i*lidarData.scan_inc + lidarData.min_angle) + dispBufferAngle, lidarData);
+                    auto end_idx = (int)round((i*lidarData.scan_inc + dispBufferAngle)/lidarData.scan_inc);
+
+                    if (end_idx > points.size())
+                        end_idx = points.size();
+
                     for (size_t j = i; j <= end_idx; j++)
                     {
                         // set virtual points
@@ -309,15 +320,20 @@ class GapFollowing
 
                 }
 
-                if (disparity > 0) // counterclockwise
-                {
-                    auto end_idx = getScanIdx((i*lidarData.scan_inc + lidarData.min_angle) - dispBufferAngle, lidarData);
-                    for (size_t j = i; j >= end_idx; j--)
-                    {
-                        // set virtual points
-                        points[j] = min_point;
-                    }
-                }
+                // if (disparity > 0) // counterclockwise
+                // {
+                //     ROS_INFO("Counterclockwise disparity");
+                //     auto end_idx = (int)round((i*lidarData.scan_inc - dispBufferAngle)/lidarData.scan_inc);
+
+                //     if (end_idx < 0)
+                //         end_idx = 0;
+
+                //     for (size_t j = i; j >= end_idx; j--)
+                //     {
+                //         // set virtual points
+                //         points[j] = min_point;
+                //     }
+                // }
             }
         }
     }

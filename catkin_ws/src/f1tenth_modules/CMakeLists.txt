@@ -114,7 +114,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES f1tenth_modules
  CATKIN_DEPENDS roscpp std_msgs message_runtime
- DEPENDS system_lib
+#  DEPENDS system_lib
 )
 
 ###########
@@ -163,6 +163,7 @@ foreach( src_file ${src_nodes} )
     ${catkin_LIBRARIES}
     taskpool
     )
+    add_dependencies(${src_name} f1tenth_modules_generate_messages_cpp)
 endforeach()
 
 
