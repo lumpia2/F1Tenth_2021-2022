@@ -26,7 +26,7 @@ $ git clone https://github.com/Pitt-RAS/ras-f1tenth
 2. Initialize submodules
 ```
 $ cd F1Tenth_2021-2022
-$ git submodules update --init --recursive
+$ git submodule update --init --recursive
 ```
 3. Install Catkin Tools if you haven't already installed them
 ```
