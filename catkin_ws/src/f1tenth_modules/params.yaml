@@ -16,6 +16,9 @@ wall_follow_idx: 5
 gap_follow_topic: "/nav"
 gap_follow_idx: 6
 
+disparity_threshold: 3.0 # meters
+disparity_buffer_angle: 0.174533 # radians
+
 rb: 0.4
 
 kp: 0.9
