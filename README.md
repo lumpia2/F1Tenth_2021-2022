@@ -47,7 +47,7 @@ You may need to source the workspace and rebuild the project
 $ source devel/setup.bash
 $ catkin build
 ```
-5. Run any of the launch files found under <cloned repo>/catkin_ws/src/f1tenth_modules/launch/sims
+5. Run any of the launch files found under /path/to/repo/catkin_ws/src/f1tenth_modules/launch/sims
 ```
 $ roslaunch f1tenth_modules <launch file>
 ```
