@@ -20,9 +20,9 @@ Try and keep your coding style consistent.
 Update your local packages if you haven't alraedy by running ```# sudo apt-get update```
 You will need ROS Noetic installed and sourced before using this repo. Installation guide can be found [here](http://wiki.ros.org/noetic/Installation/Ubuntu).
 
-1. Download the ackermann_msgs package for ROS
+1. Install ROS dependencies
 ```
-$ sudo apt install ros-noetic-ackermann-msgs
+$ sudo apt-get install ros-noetic-tf2-geometry-msgs ros-noetic-ackermann-msgs ros-noetic-joy ros-noetic-map-server
 ```
 2. Clone the repository
 ```
