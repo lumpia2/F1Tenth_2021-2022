@@ -17,7 +17,7 @@ Try and keep your coding style consistent.
 
 ## Setup
 
-Update your local packages if you haven't alraedy by running ```# sudo apt-get update```
+Update your local packages if you haven't alraedy by running ```$ sudo apt-get update```
 You will need ROS Noetic installed and sourced before using this repo. Installation guide can be found [here](http://wiki.ros.org/noetic/Installation/Ubuntu).
 
 1. Install ROS dependencies
